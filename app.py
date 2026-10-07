@@ -72,4 +72,4 @@ def index():
 
 if __name__ == '__main__':
     # Debug mode is controlled by FLASK_DEBUG in .env
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=int(os.environ.get('APP_PORT', 8000)) )

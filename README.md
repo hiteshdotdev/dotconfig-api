@@ -21,3 +21,4 @@ Configuration is read from environment variables, loaded from `.env` if present:
 | `DB_PASSWORD` | yes | Database password |
 | `DB_NAME` | yes | Database name |
 | `FLASK_DEBUG` | no | `1` to enable debug mode (default off) |
+| `APP_PORT` | no | Port the API listens on |
