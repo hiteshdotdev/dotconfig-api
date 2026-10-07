@@ -1,7 +1,7 @@
 [project]
 name = "dotconfig-api"
 version = "0.1.0"
-description = "Add your description here"
+description = "Flask REST API backed by MySQL"
 authors = [
     { name = "hitesh", email = "hiteshdotdev@gmail.com" }
 ]
