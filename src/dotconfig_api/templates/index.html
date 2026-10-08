@@ -3,24 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask REST API UI</title>
+    <meta name="color-scheme" content="light dark">
+    <title>dotconfig-api</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #171717;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --ok: #15803d;
+            --error: #b91c1c;
+            --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #111111;
+                --text: #ededed;
+                --muted: #9ca3af;
+                --border: #2a2a2a;
+                --ok: #4ade80;
+                --error: #f87171;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.5;
+        }
+
+        main {
+            max-width: 36rem;
+            margin: 0 auto;
+            padding: 4rem 1.25rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-family: var(--mono);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        h2 {
+            margin: 0 0 0.75rem;
+            color: var(--muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        p {
+            margin: 0.25rem 0 0;
+        }
+
+        a {
+            color: inherit;
+            text-underline-offset: 0.2em;
+        }
+
+        code {
+            font-family: var(--mono);
+            font-size: 0.875rem;
+        }
+
+        section {
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .muted,
+        .empty {
+            color: var(--muted);
+        }
+
+        .status {
+            margin-top: 1rem;
+            color: var(--muted);
+            font-size: 0.875rem;
+        }
+
+        .status::before {
+            content: "";
+            display: inline-block;
+            width: 0.5rem;
+            height: 0.5rem;
+            margin-right: 0.5rem;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .ok {
+            color: var(--ok);
+        }
+
+        .error {
+            color: var(--error);
+        }
+
+        form {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        input,
+        button {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font: inherit;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            background: transparent;
+            color: inherit;
+        }
+
+        input:focus {
+            border-color: var(--text);
+            outline: none;
+        }
+
+        button {
+            border-color: var(--text);
+            background: var(--text);
+            color: var(--bg);
+            cursor: pointer;
+        }
+
+        button:disabled {
+            cursor: default;
+            opacity: 0.5;
+        }
+
+        #message {
+            min-height: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        #dataList li {
+            display: flex;
+            gap: 1rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        #dataList li:last-child {
+            border-bottom: 0;
+        }
+
+        #dataList .empty {
+            display: block;
+        }
+
+        #dataList .id {
+            min-width: 2.5rem;
+            color: var(--muted);
+            font-family: var(--mono);
+            font-size: 0.875rem;
+            line-height: 1.7;
+        }
+
+        .endpoints li {
+            display: grid;
+            grid-template-columns: 3rem 8.5rem 1fr;
+            gap: 0 0.75rem;
+            align-items: baseline;
+            padding: 0.25rem 0;
+        }
+
+        .endpoints span {
+            color: var(--muted);
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 30rem) {
+            .endpoints li {
+                grid-template-columns: 3rem 1fr;
+                padding: 0.5rem 0;
+            }
+
+            .endpoints span {
+                grid-column: 2;
+            }
+        }
+    </style>
 </head>
 <body>
-<h1>Flask REST API UI</h1>
+<main>
+    <header>
+        <h1>dotconfig-api</h1>
+        <p class="muted">Flask REST API backed by MySQL.</p>
+        <p id="health" class="status">Checking</p>
+    </header>
 
-<h2>Insert Record</h2>
-<form id="insertForm">
-    <label for="name">Name:</label>
-    <input type="text" id="name" name="name" required>
-    <button type="button" onclick="insertRecord()">Insert Record</button>
-</form>
+    <section>
+        <h2>Insert Record</h2>
+        <form id="insertForm">
+            <input type="text" id="name" name="name" placeholder="Name" aria-label="Name" autocomplete="off" required>
+            <button type="submit">Insert</button>
+        </form>
+        <p id="message" role="status"></p>
+    </section>
 
-<h2>View Data</h2>
-<ul id="dataList"></ul>
+    <section>
+        <h2>Records</h2>
+        <ul id="dataList">
+            <li class="empty">Loading</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Endpoints</h2>
+        <ul class="endpoints">
+            <li><code>GET</code><a href="/health"><code>/health</code></a><span>Health check</span></li>
+            <li><code>GET</code><a href="/create_table"><code>/create_table</code></a><span>Create the table if it does not exist</span></li>
+            <li><code>POST</code><code>/insert_record</code><span>Insert a record from JSON <code>{"name": "..."}</code></span></li>
+            <li><code>GET</code><a href="/data"><code>/data</code></a><span>List all records</span></li>
+        </ul>
+    </section>
+</main>
 
 <script>
-    function insertRecord() {
-        const name = document.getElementById('name').value;
+    const health = document.getElementById('health');
+    const form = document.getElementById('insertForm');
+    const nameInput = document.getElementById('name');
+    const submitButton = form.querySelector('button');
+    const message = document.getElementById('message');
+    const dataList = document.getElementById('dataList');
+
+    function checkHealth() {
+        fetch('/health')
+        .then(response => {
+            if (!response.ok) throw new Error(response.status);
+            return response.text();
+        })
+        .then(text => {
+            health.textContent = text;
+            health.className = 'status ok';
+        })
+        .catch(() => {
+            health.textContent = 'Unavailable';
+            health.className = 'status error';
+        });
+    }
+
+    function showMessage(text, isError) {
+        message.textContent = text;
+        message.className = isError ? 'error' : 'muted';
+    }
+
+    function insertRecord(event) {
+        event.preventDefault();
+        const name = nameInput.value.trim();
+        if (!name) return;
+
+        submitButton.disabled = true;
         fetch('/insert_record', {
             method: 'POST',
             headers: {
@@ -28,28 +283,53 @@
             },
             body: JSON.stringify({ 'name': name }),
         })
-        .then(response => response.text())
-        .then(data => {
-            alert(data);
+        .then(response => {
+            if (!response.ok) throw new Error(response.status);
+            return response.text();
+        })
+        .then(text => {
+            showMessage(text, false);
+            form.reset();
             loadData();
+        })
+        .catch(() => showMessage('Could not insert the record.', true))
+        .finally(() => {
+            submitButton.disabled = false;
         });
     }
 
     function loadData() {
         fetch('/data')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) throw new Error(response.status);
+            return response.json();
+        })
         .then(data => {
-            const dataList = document.getElementById('dataList');
             dataList.innerHTML = '';
+            if (data.length === 0) {
+                dataList.innerHTML = '<li class="empty">No records yet.</li>';
+                return;
+            }
             data.forEach(record => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `ID: ${record.id}, Name: ${record.name}`;
+                const id = document.createElement('span');
+                id.className = 'id';
+                id.textContent = record.id;
+                const name = document.createElement('span');
+                name.textContent = record.name;
+                listItem.append(id, name);
                 dataList.appendChild(listItem);
             });
+        })
+        .catch(() => {
+            dataList.innerHTML = '<li class="empty">Could not load records. Open <a href="/create_table">/create_table</a> if the table does not exist yet.</li>';
         });
     }
 
-    // Load initial data when the page is loaded
+    form.addEventListener('submit', insertRecord);
+
+    // Load initial state when the page is loaded
+    checkHealth();
     loadData();
 </script>
 </body>
